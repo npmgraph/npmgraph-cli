@@ -1,0 +1,13 @@
+{
+  "compilerOptions": {
+    "allowSyntheticDefaultImports": true,
+    "module": "es2022",
+    "moduleResolution": "node",
+    "outDir": "./dist",
+    "removeComments": true,
+    "strict": true,
+    "sourceMap": true,
+    "target": "ES2020"
+  },
+  "include": [ "src/**/*" ],
+}
