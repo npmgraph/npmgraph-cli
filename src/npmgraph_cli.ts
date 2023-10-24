@@ -97,7 +97,6 @@ export default async function () {
           if (!filePackage) continue;
           q.push(`${filePackage.name}@${filePackage.version}`);
         }
-        console.log('filePackages', filePackages);
 
         hash.set(
           'packages',
@@ -105,7 +104,7 @@ export default async function () {
         );
       } else if (packages.length) {
         for (const packageName of packages) {
-          q.push(encodeURIComponent(packageName));
+          q.push(packageName);
         }
       }
 
