@@ -16,39 +16,18 @@ To see command help:
 npmgraph -h
 ```
 
-## Viewing dependencies for NPM modules
+## Examples
 
-A single module:
-```bash
-npmgraph express
-
-```
-
-To see multiple NPM modules:
-```bash
-npmgraph minimatch cross-env rimraf
-
-```
-## Viewing dependencies for local package.json files
-
-```bash
-npmgraph -f my-project/package.json
-
-```
-
-Note: If your local package.json files depend on _other_ local package.json files, you'll need to include each file on the command line.  For example:
+| Command | Shows dependencies...|
+| --- | --- |
+| `npmgraph express` | ... for the `express` package |
+| `npmgraph --hide express` | ... with the inspector minimized |
+| `npmgraph --color=bus --deps=devDependencies express` | ... colorized by # of maintainers, including `devDependencies` |
+| `npmgraph minimatch cross-env rimraf` | ... for multiple NPM packages |
+| `npmgraph -f ./my-project/package.json` |  ... for a local package.json file |
+| `npmgraph -f my-project/package.json my-project/packages/*/package.json` |  ... for multiple local files (useful when local packages depend on one another) |
+| `npmgraph https://github.com/npmgraph/npmgraph/blob/main/package.json` |  ... for a web-hosted package.json URL |
 
 
-```bash
-npmgraph -f my-project/package.json my-project/packages/*/package.json
+> [!NOTE] Web-hosted URLs must be [CORS accessible](https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS).
 
-```
-
-## Viewing dependencies for web-hosted files
-
-`npmgraph` has a limited ability to work with files online, however the URL in question needs to be [CORS accessible](https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS).  (Future versions of the `npmgraph` CLI may remove this restriction.)
-
-```bash
-npmgraph https://github.com/npmgraph/npmgraph/blob/main/package.json
-
-```

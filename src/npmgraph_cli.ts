@@ -76,6 +76,26 @@ export default async function () {
   program
     .version(getVersion())
     .option('-f, --file <files...>', 'use local package.json file')
+    .option(
+      '--select [select]',
+      'see https://github.com/npmgraph/npmgraph#select-hash-param',
+    )
+    .option(
+      '--hide',
+      'see https://github.com/npmgraph/npmgraph#hide-hash-param',
+    )
+    .option(
+      '--zoom [zoom]',
+      'see https://github.com/npmgraph/npmgraph#zoom-hash-param',
+    )
+    .option(
+      '--deps [deps]',
+      'see https://github.com/npmgraph/npmgraph#deps-hash-param',
+    )
+    .option(
+      '--color [color]',
+      'see https://github.com/npmgraph/npmgraph#color-hash-param',
+    )
     // YOU WERE Headers, IMPLEMENTING PATHS
     // use '<' and '>' to indicate required arguments
     // use '[...]' to indicate optional arguments
@@ -107,6 +127,12 @@ export default async function () {
           q.push(packageName);
         }
       }
+
+      if (options.select) hash.set('select', options.select);
+      if (options.hide) hash.set('hide', '');
+      if (options.zoom) hash.set('zoom', options.zoom);
+      if (options.deps) hash.set('deps', options.deps);
+      if (options.color) hash.set('color', options.color);
 
       url.searchParams.set('q', q.join(','));
       url.hash = hash.toString();
