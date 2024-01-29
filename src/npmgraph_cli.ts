@@ -57,7 +57,7 @@ async function getLocalPackage(
     }
 
     const sanitizedPackage: PackageJSON = {} as PackageJSON;
-    for (const k of ['name', 'version', 'dependencies', 'devDependencies']) {
+    for (const k of ['name', 'version', 'dependencies', 'devDependencies', 'peerDependencies']) {
       if (k in pkg) {
         sanitizedPackage[k] = pkg[k];
       }
