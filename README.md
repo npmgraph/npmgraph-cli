@@ -29,5 +29,6 @@ npmgraph -h
 | `npmgraph https://github.com/npmgraph/npmgraph/blob/main/package.json` |  ... for a web-hosted package.json URL |
 
 
-> [!NOTE] Web-hosted URLs must be [CORS accessible](https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS).
+> [!NOTE]
+> Web-hosted URLs must be [CORS accessible](https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS).
 
