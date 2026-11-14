@@ -1,0 +1,17 @@
+pre-commit:
+  commands:
+    format:
+      run: npm run format:check {staged_files}
+
+    lint:
+      glob: '**/*.ts'
+      run: npm run lint {staged_files}
+
+    types:
+      glob: '**/*.ts'
+      run: npm run types
+
+commit-msg:
+  commands:
+    commitlint:
+      run: npx commitlint --edit {1}

@@ -17,7 +17,16 @@ type PackageJSON = {
   [key: string]: unknown;
 };
 
-function getVersion() {
+type ProgramOptions = {
+  file?: string[];
+  select?: string;
+  hide?: boolean;
+  zoom?: string;
+  deps?: string;
+  color?: string;
+};
+
+function getVersion(): string {
   const packagePathname = path.join(__dirname, '..', 'package.json');
   const pkg = fs.readFileSync(packagePathname, 'utf8');
   return JSON.parse(pkg).version;
@@ -57,11 +66,18 @@ async function getLocalPackage(
     }
 
     const sanitizedPackage: PackageJSON = {} as PackageJSON;
-    for (const k of ['name', 'version', 'dependencies', 'devDependencies', 'peerDependencies']) {
+    for (const k of [
+      'name',
+      'version',
+      'dependencies',
+      'devDependencies',
+      'peerDependencies',
+    ]) {
       if (k in pkg) {
         sanitizedPackage[k] = pkg[k];
       }
     }
+
     return sanitizedPackage;
   } catch (err) {
     console.warn(`Invalid JSON at "${pathname}"`, (err as Error).message);
@@ -70,7 +86,7 @@ async function getLocalPackage(
   return undefined;
 }
 
-export default async function () {
+export default async function cli(): Promise<void> {
   process.title = 'npmgraph';
 
   program
@@ -96,21 +112,18 @@ export default async function () {
       '--color [color]',
       'see https://github.com/npmgraph/npmgraph#color-hash-param',
     )
-    // YOU WERE Headers, IMPLEMENTING PATHS
-    // use '<' and '>' to indicate required arguments
-    // use '[...]' to indicate optional arguments
     .argument('[packages...]', 'Public NPM package names')
-    .action(async function (packages: string[]) {
-      const options = program.opts();
+    .action(async (packages: string[]): Promise<void> => {
+      const options = program.opts<ProgramOptions>();
       let filePackages: (PackageJSON | undefined)[] = [];
       const url = new URL(BASE);
       const q: string[] = [];
 
       const hash = new URLSearchParams();
 
-      if (options.file?.length > 0) {
+      if (options.file?.length && options.file.length > 0) {
         filePackages = await Promise.all(
-          (options.file as string[]).map((f) => getLocalPackage(f)),
+          options.file.map(f => getLocalPackage(f)),
         );
 
         for (const filePackage of filePackages) {
@@ -120,7 +133,9 @@ export default async function () {
 
         hash.set(
           'packages',
-          JSON.stringify(filePackages.filter((pkg) => Boolean(pkg))),
+          JSON.stringify(
+            filePackages.filter((pkg): pkg is PackageJSON => Boolean(pkg)),
+          ),
         );
       } else if (packages.length) {
         for (const packageName of packages) {
