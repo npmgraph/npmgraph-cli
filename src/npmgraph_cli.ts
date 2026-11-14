@@ -20,10 +20,14 @@ type PackageJSON = {
 type ProgramOptions = {
   file?: string[];
   select?: string;
-  hide?: boolean;
-  zoom?: string;
+  hide?: string | boolean;
   deps?: string;
   color?: string;
+  collapse?: string;
+  registry?: string;
+  sizing?: boolean;
+  tab?: string;
+  section?: string;
 };
 
 function getVersion(): string {
@@ -94,25 +98,32 @@ export default async function cli(): Promise<void> {
     .option('-f, --file <files...>', 'use local package.json file')
     .option(
       '--select [select]',
-      'see https://github.com/npmgraph/npmgraph#select-hash-param',
+      'select modules: exact:<key>, name:<name>, license:<license>, maintainer:<name>',
     )
     .option(
-      '--hide',
-      'see https://github.com/npmgraph/npmgraph#hide-hash-param',
+      '--hide [type]',
+      'hide inspector panel (or "graph" for report-only view)',
     )
     .option(
-      '--zoom [zoom]',
-      'see https://github.com/npmgraph/npmgraph#zoom-hash-param',
+      '--deps <deps>',
+      'include dependency types: devDependencies, peerDependencies',
     )
     .option(
-      '--deps [deps]',
-      'see https://github.com/npmgraph/npmgraph#deps-hash-param',
+      '--color <mode>',
+      'colorization mode: moduleType (default), bus, outdated',
     )
     .option(
-      '--color [color]',
-      'see https://github.com/npmgraph/npmgraph#color-hash-param',
+      '--collapse <modules>',
+      'collapse module subtrees (comma-separated)',
     )
-    .argument('[packages...]', 'Public NPM package names')
+    .option(
+      '--registry <url>',
+      'custom npm registry URL (defaults to npmjs.org)',
+    )
+    .option('--sizing', 'scale modules by unpacked size')
+    .option('--tab <name>', 'active tab: info, report, module, or view')
+    .option('--section <name>', 'inspector section to expand/scroll into view')
+    .argument('[packages...]', 'public npm package names or versions')
     .action(async (packages: string[]): Promise<void> => {
       const options = program.opts<ProgramOptions>();
       let filePackages: (PackageJSON | undefined)[] = [];
@@ -144,12 +155,22 @@ export default async function cli(): Promise<void> {
       }
 
       if (options.select) hash.set('select', options.select);
-      if (options.hide) hash.set('hide', '');
-      if (options.zoom) hash.set('zoom', options.zoom);
+      if (options.hide) {
+        hash.set('hide', typeof options.hide === 'string' ? options.hide : '');
+      }
+
       if (options.deps) hash.set('deps', options.deps);
       if (options.color) hash.set('color', options.color);
+      if (options.collapse) hash.set('collapse', options.collapse);
+      if (options.sizing) hash.set('sizing', '');
+      if (options.tab) hash.set('tab', options.tab);
+      if (options.section) hash.set('section', options.section);
 
       url.searchParams.set('q', q.join(','));
+      if (options.registry) {
+        url.searchParams.set('registry', options.registry);
+      }
+
       url.hash = hash.toString();
 
       await open(url.toString());
