@@ -17,7 +17,20 @@ type PackageJSON = {
   [key: string]: unknown;
 };
 
-function getVersion() {
+type ProgramOptions = {
+  file?: string[];
+  select?: string;
+  hide?: string | boolean;
+  deps?: string;
+  color?: string;
+  collapse?: string;
+  registry?: string;
+  sizing?: boolean;
+  tab?: string;
+  section?: string;
+};
+
+function getVersion(): string {
   const packagePathname = path.join(__dirname, '..', 'package.json');
   const pkg = fs.readFileSync(packagePathname, 'utf8');
   return JSON.parse(pkg).version;
@@ -57,11 +70,18 @@ async function getLocalPackage(
     }
 
     const sanitizedPackage: PackageJSON = {} as PackageJSON;
-    for (const k of ['name', 'version', 'dependencies', 'devDependencies', 'peerDependencies']) {
+    for (const k of [
+      'name',
+      'version',
+      'dependencies',
+      'devDependencies',
+      'peerDependencies',
+    ]) {
       if (k in pkg) {
         sanitizedPackage[k] = pkg[k];
       }
     }
+
     return sanitizedPackage;
   } catch (err) {
     console.warn(`Invalid JSON at "${pathname}"`, (err as Error).message);
@@ -70,7 +90,7 @@ async function getLocalPackage(
   return undefined;
 }
 
-export default async function () {
+export default async function cli(): Promise<void> {
   process.title = 'npmgraph';
 
   program
@@ -78,39 +98,43 @@ export default async function () {
     .option('-f, --file <files...>', 'use local package.json file')
     .option(
       '--select [select]',
-      'see https://github.com/npmgraph/npmgraph#select-hash-param',
+      'select modules: exact:<key>, name:<name>, license:<license>, maintainer:<name>',
     )
     .option(
-      '--hide',
-      'see https://github.com/npmgraph/npmgraph#hide-hash-param',
+      '--hide [type]',
+      'hide inspector panel (or "graph" for report-only view)',
     )
     .option(
-      '--zoom [zoom]',
-      'see https://github.com/npmgraph/npmgraph#zoom-hash-param',
+      '--deps <deps>',
+      'include dependency types: devDependencies, peerDependencies',
     )
     .option(
-      '--deps [deps]',
-      'see https://github.com/npmgraph/npmgraph#deps-hash-param',
+      '--color <mode>',
+      'colorization mode: moduleType (default), bus, outdated',
     )
     .option(
-      '--color [color]',
-      'see https://github.com/npmgraph/npmgraph#color-hash-param',
+      '--collapse <modules>',
+      'collapse module subtrees (comma-separated)',
     )
-    // YOU WERE Headers, IMPLEMENTING PATHS
-    // use '<' and '>' to indicate required arguments
-    // use '[...]' to indicate optional arguments
-    .argument('[packages...]', 'Public NPM package names')
-    .action(async function (packages: string[]) {
-      const options = program.opts();
+    .option(
+      '--registry <url>',
+      'custom npm registry URL (defaults to npmjs.org)',
+    )
+    .option('--sizing', 'scale modules by unpacked size')
+    .option('--tab <name>', 'active tab: info, report, module, or view')
+    .option('--section <name>', 'inspector section to expand/scroll into view')
+    .argument('[packages...]', 'public npm package names or versions')
+    .action(async (packages: string[]): Promise<void> => {
+      const options = program.opts<ProgramOptions>();
       let filePackages: (PackageJSON | undefined)[] = [];
       const url = new URL(BASE);
       const q: string[] = [];
 
       const hash = new URLSearchParams();
 
-      if (options.file?.length > 0) {
+      if (options.file?.length && options.file.length > 0) {
         filePackages = await Promise.all(
-          (options.file as string[]).map((f) => getLocalPackage(f)),
+          options.file.map(f => getLocalPackage(f)),
         );
 
         for (const filePackage of filePackages) {
@@ -120,7 +144,9 @@ export default async function () {
 
         hash.set(
           'packages',
-          JSON.stringify(filePackages.filter((pkg) => Boolean(pkg))),
+          JSON.stringify(
+            filePackages.filter((pkg): pkg is PackageJSON => Boolean(pkg)),
+          ),
         );
       } else if (packages.length) {
         for (const packageName of packages) {
@@ -129,12 +155,22 @@ export default async function () {
       }
 
       if (options.select) hash.set('select', options.select);
-      if (options.hide) hash.set('hide', '');
-      if (options.zoom) hash.set('zoom', options.zoom);
+      if (options.hide) {
+        hash.set('hide', typeof options.hide === 'string' ? options.hide : '');
+      }
+
       if (options.deps) hash.set('deps', options.deps);
       if (options.color) hash.set('color', options.color);
+      if (options.collapse) hash.set('collapse', options.collapse);
+      if (options.sizing) hash.set('sizing', '');
+      if (options.tab) hash.set('tab', options.tab);
+      if (options.section) hash.set('section', options.section);
 
       url.searchParams.set('q', q.join(','));
+      if (options.registry) {
+        url.searchParams.set('registry', options.registry);
+      }
+
       url.hash = hash.toString();
 
       await open(url.toString());

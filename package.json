@@ -18,22 +18,33 @@
   },
   "license": "MIT",
   "devDependencies": {
-    "@types/node": "20.5.9",
-    "@typescript-eslint/eslint-plugin": "6.6.0",
-    "@typescript-eslint/parser": "6.6.0",
-    "prettier": "3.0.3",
-    "standard-version": "9.5.0",
-    "typescript": "5.2.2"
+    "@commitlint/cli": "^18.0.0",
+    "@commitlint/config-conventional": "^18.0.0",
+    "@eslint/js": "^8.0.0",
+    "@sindresorhus/tsconfig": "^5.0.0",
+    "@types/node": "20.19.43",
+    "@typescript-eslint/eslint-plugin": "^6.6.0",
+    "@typescript-eslint/parser": "^6.6.0",
+    "eslint": "^8.54.0",
+    "lefthook": "^1.6.8",
+    "npm-run-all2": "^6.0.0",
+    "prettier": "^3.0.3",
+    "typescript": "^5.2.2"
   },
   "scripts": {
     "build": "npm run build:clean && tsc",
     "build:clean": "rm -fr dist",
     "build:watch": "npm run build:clean && tsc --watch",
-    "lint": "prettier -c .",
-    "lint:fix": "prettier -w .",
+    "lint": "eslint",
+    "lint:fix": "eslint --fix",
+    "fix": "run-s --continue-on-error format lint:fix format",
+    "format": "prettier --write --list-different .",
+    "format:check": "prettier --check .",
+    "types": "tsc --noEmit",
+    "test:unit": "node --test",
+    "test": "run-p format:check lint types test:unit build",
     "prepare": "npm run build",
-    "prepublishOnly": "npm run build",
-    "test": "echo \"no tests at this time\""
+    "prepublishOnly": "npm run build"
   },
   "repository": {
     "type": "git",
@@ -50,8 +61,16 @@
   "funding": [
     "https://github.com/sponsors/broofa"
   ],
+  "commitlint": {
+    "extends": [
+      "@commitlint/config-conventional"
+    ]
+  },
   "dependencies": {
     "commander": "11.1.0",
     "open": "9.1.0"
+  },
+  "allowScripts": {
+    "lefthook@1.13.6": true
   }
 }
