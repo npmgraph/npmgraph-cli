@@ -13,14 +13,7 @@ If Lefthook pre-commit hooks are not enabled, run `npm run format:check`, `npm r
 ## CLI Interface
 
 The CLI should provide options that correspond to all npmgraph URL API parameters.
-When syncing CLI options, ensure consistency with the npmgraph URL API parameters:
-
-- `--select` - filters the graph display
-- `--hide` - hides certain nodes
-- `--zoom` - sets initial zoom level
-- `--deps` - controls dependency type inclusion (prod/dev/peer)
-- `--color` - sets color scheme
-- `--file` - loads local package.json files
+When syncing CLI options, ensure consistency with the npmgraph README and implementation.
 
 Update README.md with any new options or changes to existing options.
 
